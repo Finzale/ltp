@@ -487,7 +487,7 @@ tst_netload()
 	fi
 
 	OPTIND=0
-	while getopts :a:H:d:n:N:r:R:S:b:t:T:fFe:m:A: opt; do
+	while getopts :a:H:d:n:N:r:R:S:b:t:T:fFe:m:A:D: opt; do
 		case "$opt" in
 		a) c_num="$OPTARG" ;;
 		H) c_opts="${c_opts}-H $OPTARG "
@@ -508,6 +508,7 @@ tst_netload()
 		f) cs_opts="${cs_opts}-f " ;;
 		F) cs_opts="${cs_opts}-F " ;;
 		e) expect_res="$OPTARG" ;;
+		D) cs_opts="${cs_opts}-D $OPTARG " ;;
 		*) tst_brk_ TBROK "tst_netload: unknown option: $OPTARG" ;;
 		esac
 	done
@@ -755,4 +756,15 @@ export RHOST_HWADDRS="${RHOST_HWADDRS:-$(tst_get_hwaddrs rhost)}"
 
 if [ -n "$TST_USE_LEGACY_API" ]; then
 	tst_net_remote_tmpdir
+fi
+
+if [ -z "$TST_USE_LEGACY_API" ] && ! tst_cmd_available ping6; then
+	ping6()
+	{
+		ping -6 $@
+	}
+	if [ -z "$ping6_warn_printed" ]; then
+		tst_res_ TINFO "ping6 binary/symlink is missing, using workaround. Please, report missing ping6 to your distribution."
+		export ping6_warn_printed=1
+	fi
 fi
